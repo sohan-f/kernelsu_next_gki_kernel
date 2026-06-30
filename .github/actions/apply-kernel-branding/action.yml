@@ -1,22 +1,3 @@
-name: 'Apply Kernel Branding & Timestamp'
-description: 'Apply Wild kernel branding to kernel version string'
-inputs:
-  variant:
-    description: 'Variant of kernel to apply branding to'
-    required: true
-  kernel_version:
-    description: 'Kernel version (e.g., 6.1)'
-    required: true
-  android_version:
-    description: 'Android version (e.g., android14)'
-    required: true
-  version:
-    description: 'Combined version (e.g., android14-6.1)'
-    required: true
-  sublevel:
-    description: 'Sublevel of kernel version (e.g., 1)'
-    required: true
-
 runs:
   using: "composite"
   steps:
@@ -28,10 +9,19 @@ runs:
         ANDROID_PART=$(echo "$VERSION" | cut -d- -f1)
         KERNEL_PART=$(echo "$VERSION" | cut -d- -f2)
 
-        if [[ ${{ inputs.version }} == "android15-6.6" || ${{ inputs.version }} == "android16-6.12" ]]; then
+        SCM_COUNT="8"
+        GIT_HASH="88d70c0b44bf"
+        BUILD_NUM="14541233"
+        PAGE_SIZE="4k"
+
+        if [[ "$VERSION" == "android15-6.6" || "$VERSION" == "android16-6.12" ]]; then
           KERNEL_STRING="$KERNEL_PART.${{ inputs.sublevel }}-$ANDROID_PART"
-          sed -i '$d' scripts/setlocalversion && echo "echo \"$KERNEL_STRING-Wild\"" >> scripts/setlocalversion
         else
-          sed -i '$d' scripts/setlocalversion && echo "echo \"-$ANDROID_PART-Wild\"" >> scripts/setlocalversion
+          KERNEL_STRING="-$ANDROID_PART"
         fi
+
+        FULL_STRING="$KERNEL_STRING-$SCM_COUNT-g$GIT_HASH-ab$BUILD_NUM-$PAGE_SIZE"
+
+        sed -i '$d' scripts/setlocalversion
+        echo "echo \"$FULL_STRING\"" >> scripts/setlocalversion
         chmod +x scripts/setlocalversion

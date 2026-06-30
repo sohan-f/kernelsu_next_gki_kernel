@@ -14,6 +14,10 @@ inputs:
   os_patch_level:
     description: 'OS patch level (e.g., 2024-01)'
     required: true
+  release_variant:
+    description: 'Specific GKI release variant tag suffix (e.g., r19)'
+    required: false
+    default: ''
 
 outputs:
   deprecated_branch:
@@ -58,7 +62,6 @@ runs:
 
         while [ $attempt -le $MAX_RETRIES ]; do
           echo "Attempt $attempt/$MAX_RETRIES: repo sync (timeout $SYNC_TIMEOUT)..."
-          # Use minimal-shallow variant: current-branch, shallow init done above, reduce files downloaded
           if timeout $SYNC_TIMEOUT repo sync -c --current-branch --no-clone-bundle --no-tags --jobs-checkout=4 -j4; then
             echo "repo sync succeeded on attempt $attempt."
             break
@@ -81,42 +84,27 @@ runs:
           attempt=$((attempt+1))
         done
 
-    # --- Non-repo steps (commented out; we only use repo now) ---
-    # - name: Download manifest.xml for branch (with deprecated fallback)
-    #   shell: bash
-    #   working-directory: ${{ github.workspace }}/kernel
-    #   run: |
-    #     set -euo pipefail
-    #     VERSION="${{ inputs.version }}"
-    #     ANDROID_PART=$(echo "$VERSION" | cut -d- -f1)
-    #     KERNEL_PART=$(echo "$VERSION" | cut -d- -f2)
-    #     FORMATTED_BRANCH="${ANDROID_PART}-${KERNEL_PART}-${{ inputs.os_patch_level }}"
-    #     MAIN_MANIFEST_URL="https://android.googlesource.com/kernel/manifest/+/refs/heads/common-${FORMATTED_BRANCH}/default.xml?format=TEXT"
-    #     DEPRECATED_MANIFEST_URL="https://android.googlesource.com/kernel/manifest/+/refs/heads/deprecated/common-${FORMATTED_BRANCH}/default.xml?format=TEXT"
-    #     echo "Trying to fetch manifest from $MAIN_MANIFEST_URL"
-    #     if curl -fsSL "$MAIN_MANIFEST_URL" | base64 -d > manifest.xml; then
-    #       echo "Fetched manifest from $MAIN_MANIFEST_URL"
-    #     else
-    #       echo "Main manifest fetch failed, trying deprecated branch."
-    #       echo "⚠ Note: Branch common-${FORMATTED_BRANCH} is considered deprecated."
-    #       if curl -fsSL "$DEPRECATED_MANIFEST_URL" | base64 -d > manifest.xml; then
-    #         echo "Fetched manifest from $DEPRECATED_MANIFEST_URL"
-    #       else
-    #         echo "ERROR: Neither main nor deprecated branch exists for $FORMATTED_BRANCH" >&2
-    #         exit 22
-    #       fi
-    #     fi
-    #
-    # - name: Debug Show manifest.xml
-    #   shell: bash
-    #   working-directory: ${{ github.workspace }}/kernel
-    #   run: cat manifest.xml
-    #
-    # - name: Fast Parallel Archive Download
-    #   shell: bash
-    #   working-directory: ${{ github.workspace }}/kernel
-    #   run: |
-    #     python "${{ github.workspace }}/.github/actions/download-kernel/fast_parallel_download.py"
+        # --- NEW CODE: Handle Specific Release Variant Tag ---
+        RELEASE_VAR="${{ inputs.release_variant }}"
+        if [ -n "$RELEASE_VAR" ]; then
+          TAG_NAME="${FORMATTED_BRANCH}_${RELEASE_VAR}"
+          echo "Targeting specific GKI release variant tag: $TAG_NAME"
+          
+          if [ -d common ]; then
+            cd common
+            echo "Fetching explicit tag from upstream..."
+            # Bypassing local remote configurations by calling the structural URL directly
+            git fetch https://android.googlesource.com/kernel/common refs/tags/${TAG_NAME}:refs/tags/${TAG_NAME}
+            
+            echo "Checking out tag $TAG_NAME..."
+            git checkout refs/tags/${TAG_NAME}
+            cd ..
+            echo "Successfully targeted GKI variant source tree!"
+          else
+            echo "ERROR: 'common' core kernel folder was not built during sync execution." >&2
+            exit 1
+          fi
+        fi
 
     - name: Capture Kernel Common Commit Metadata
       shell: bash
