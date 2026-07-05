@@ -148,6 +148,7 @@ jobs:
 
     - name: Apply BBRv3 Patches
       uses: ./.github/actions/bbrv3
+      if: false
       with:
         version: ${{ inputs.version }}
         sublevel: ${{ steps.extract.outputs.sublevel }}
@@ -186,6 +187,7 @@ jobs:
 
     - name: Apply Performance Patches
       uses: ./.github/actions/performance
+      if: false
       with:
         kernel_version: ${{ inputs.kernel_version }}
 
