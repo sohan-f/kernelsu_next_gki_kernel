@@ -180,7 +180,6 @@ jobs:
 
     - name: Apply Performance Patches
       uses: ./.github/actions/performance
-      if: false
       with:
         kernel_version: ${{ inputs.kernel_version }}
 
@@ -196,12 +195,6 @@ jobs:
 
     - name: Apply Kernel Branding
       uses: ./.github/actions/apply-kernel-branding
-      with:
-        variant: ${{ inputs.variant }}
-        kernel_version: ${{ inputs.kernel_version }}
-        android_version: ${{ inputs.android_version }}
-        version: ${{ inputs.version }}
-        sublevel: ${{ steps.extract.outputs.sublevel }}
 
     - name: Remove Protected Exports
       uses: ./.github/actions/remove-protected-exports
