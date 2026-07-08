@@ -93,9 +93,7 @@ runs:
       run: |
         set -euo pipefail
         if [[ ${{ inputs.version }} == "android15-6.6" ]]; then
-          cp "${{ github.workspace }}/kernel_patches/common/bbrv3/0001-net-tcp-backport-BBRv3-to-android15-6.6.patch" temp.patch
-          patch -p1 -F 3 < temp.patch
-          rm temp.patch
+          patch -p1 < "${{ github.workspace }}/kernel_patches/common/bbrv3/0001-net-tcp-backport-BBRv3-to-android15-6.6.patch"
         fi
 
         echo "✅ BBRv3 patches applied"
@@ -105,3 +103,14 @@ runs:
       with:
         config_list: |
           CONFIG_TCP_CONG_BBR3=y
+
+    - name: Enable CIFS Configs
+      uses: ./.github/actions/set-kernel-config
+      with:
+        config_list: |
+          CONFIG_CIFS=y
+          CONFIG_NETWORK_FILESYSTEMS=y
+          CONFIG_NETFS_SUPPORT=y
+          CONFIG_KEYS=y
+          CONFIG_CIFS_XATTR=y
+          CONFIG_CIFS_POSIX=y
