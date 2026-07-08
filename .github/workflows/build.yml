@@ -195,6 +195,9 @@ jobs:
 
     - name: Apply Kernel Branding
       uses: ./.github/actions/apply-kernel-branding
+      with:
+        version: ${{ inputs.version }}
+        sublevel: ${{ steps.extract.outputs.sublevel }}
 
     - name: Remove Protected Exports
       uses: ./.github/actions/remove-protected-exports

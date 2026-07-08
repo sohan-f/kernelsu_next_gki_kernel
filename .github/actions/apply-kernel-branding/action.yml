@@ -1,3 +1,15 @@
+name: "Kernel Name Branding"
+description: "Applies kernel name branding based on version and sublevel inputs"
+
+inputs:
+  version:
+    description: "The android-kernel version string (e.g., android15-6.6)"
+    required: true
+  sublevel:
+    description: "The kernel sublevel version"
+    required: false
+    default: "87"
+
 runs:
   using: "composite"
   steps:
