@@ -1,15 +1,15 @@
-name: Setup Wild KSU
-description: Download and configure Wild KSU with version tracking
+name: Setup KernelSU-Next
+description: Download and configure KernelSU-Next with version tracking
 inputs:
   ksu_branch:
-    description: 'KernelSU branch or commit (empty = latest dev-susfs branch tip)'
+    description: 'KernelSU-Next branch or commit (empty = latest dev-susfs branch tip)'
     required: false
     default: ""
 
 runs:
   using: composite
   steps:
-    - name: Download Wild KSU
+    - name: Download KernelSU-Next
       shell: bash
       working-directory: ${{ github.workspace }}/kernel
       run: |

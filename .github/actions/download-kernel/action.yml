@@ -93,8 +93,6 @@ runs:
           if [ -d common ]; then
             cd common
             echo "Fetching explicit tag from upstream (shallow)..."
-            # --depth=1 keeps this a single-commit fetch instead of deepening
-            # the whole shallow clone. --no-tags stops git from auto-creating
             # local refs for every other tag on the remote. protocol.version=2
             # avoids a full ref-advertisement dump during the handshake.
             git -c protocol.version=2 fetch --depth=1 --no-tags https://android.googlesource.com/kernel/common refs/tags/${TAG_NAME}:refs/tags/${TAG_NAME}
