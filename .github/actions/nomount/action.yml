@@ -1,0 +1,58 @@
+name: 'Setup NoMount'
+description: 'Download, patch, and integrate NoMount into the Android kernel source tree'
+
+inputs:
+  nomount_branch:
+    description: 'Branch or commit of NoMount to use'
+    required: false
+    default: 'master'
+  patch_file_name:
+    description: 'The exact name of the patch file to use (e.g., nomount_5.10_kernel_integration.patch)'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Clone NoMount Repository
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel
+      run: |
+        set -euo pipefail
+        echo "Cloning NoMount repository..."
+        git clone --depth=1 -b "${{ inputs.nomount_branch }}" https://github.com/maxsteeel/nomount.git nomount_src
+
+    - name: Integrate NoMount into Kernel
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel
+      run: |
+        set -euo pipefail
+
+        echo "Copying NoMount core files to common/fs/..."
+        cp -v nomount_src/kernel/src/* common/fs/
+
+        echo "Applying NoMount integration patch: ${{ inputs.patch_file_name }}"
+
+        PATCH_PATH="${{ github.workspace }}/patches/${{ inputs.patch_file_name }}"
+
+        if [ ! -f "$PATCH_PATH" ]; then
+            echo "ERROR: Patch file '$PATCH_PATH' not found." >&2
+            exit 1
+        fi
+
+        cd common
+        patch -p1 < "$PATCH_PATH"
+
+        echo "Successfully patched the kernel with NoMount hooks!"
+
+    - name: Clean Up Temporary Source
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel
+      run: |
+        echo "Cleaning up temporary NoMount source directory..."
+        rm -rf nomount_src
+
+    - name: Enable Kernel Configs
+      uses: ./.github/actions/set-kernel-config
+      with:
+        config_list: |
+          CONFIG_NOMOUNT=y

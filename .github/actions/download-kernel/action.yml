@@ -84,7 +84,7 @@ runs:
           attempt=$((attempt+1))
         done
 
-        # --- NEW CODE: Handle Specific Release Variant Tag ---
+        # Handle Specific Release Variant Tag ---
         RELEASE_VAR="${{ inputs.release_variant }}"
         if [ -n "$RELEASE_VAR" ]; then
           TAG_NAME="${FORMATTED_BRANCH}_${RELEASE_VAR}"

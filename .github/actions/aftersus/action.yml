@@ -1,0 +1,18 @@
+name: 'After patch fix'
+description: 'patch task_mmu.c for nomount'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Integrate NoMount into Kernel
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel
+      run: |
+        set -euo pipefail
+
+        PATCH_PATH="${{ github.workspace }}/patches/fix.patch"
+
+        # Move into the core kernel source and apply the patch
+        cd common
+        patch -p1 < "$PATCH_PATH"
+        echo "Successfully patched the kernel with NoMount hooks!"
