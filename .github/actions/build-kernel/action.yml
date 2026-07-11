@@ -14,13 +14,17 @@ runs:
   - name: 'Activate Bypass'
     shell: bash
     working-directory: ${{ github.workspace }}/kernel
+    env:
+      INPUT_BYPASS: ${{ inputs.bypass }}
+      INPUT_VERSION: ${{ inputs.version }}
+      WORKSPACE: ${{ github.workspace }}
     run: |
       set -euo pipefail
-      if [ "${{ inputs.bypass }}" = "true" ]; then
-        if [[ ${{ inputs.version }} == "android14-6.1" || ${{ inputs.version }} == "android15-6.6" || ${{ inputs.version }} == "android16-6.12" ]]; then
-          TARGET_FILE="${{ github.workspace }}/kernel/common/kernel/module/version.c"
+      if [ "$INPUT_BYPASS" = "true" ]; then
+        if [[ "$INPUT_VERSION" == "android14-6.1" || "$INPUT_VERSION" == "android15-6.6" || "$INPUT_VERSION" == "android16-6.12" ]]; then
+          TARGET_FILE="$WORKSPACE/kernel/common/kernel/module/version.c"
         else
-          TARGET_FILE="${{ github.workspace }}/kernel/common/kernel/module.c"
+          TARGET_FILE="$WORKSPACE/kernel/common/kernel/module.c"
         fi
 
         sed -i '/bad_version:/{:a;n;/return 0;/{s/return 0;/return 1;/;b};ba}' "$TARGET_FILE"
@@ -34,16 +38,18 @@ runs:
         echo "Bypass hack not applied as per input parameter."
       fi
 
-  - name: Setup Kernel Configs
-    if: false
-    uses: ./.github/actions/set-kernel-config
-  
   - name: 'Build Kernel'
     shell: bash
     working-directory: ${{ github.workspace }}/kernel
+    env:
+      INPUT_BYPASS: ${{ inputs.bypass }}
+      INPUT_VERSION: ${{ inputs.version }}
+      WORKSPACE: ${{ github.workspace }}
     run: |
+      set -euo pipefail
       cat common/arch/arm64/configs/gki_defconfig
       sed -i 's/check_defconfig//' ./common/build.config.gki
+      
       if [ -f "build/build.sh" ]; then
         BUILD_GKI_ARTIFACTS= \
         BUILD_GKI_CERTIFICATION_TOOLS=0 \
@@ -59,11 +65,11 @@ runs:
         CXX="/usr/bin/ccache clang+" \
         HOSTCC="/usr/bin/ccache clang" \
         HOSTCXX="/usr/bin/ccache clang+" \
-        LD="${{ github.workspace }}/kernel/common/ld-wrapper" \
-        HOSTLD="${{ github.workspace }}/kernel/common/ld-wrapper"
+        LD="$WORKSPACE/kernel/common/ld-wrapper" \
+        HOSTLD="$WORKSPACE/kernel/common/ld-wrapper"
       else
-        if [[ ${{ inputs.version }} == "android16-6.12" ]]; then
-          if [ "${{ inputs.bypass }}" = "false" ]; then
+        if [[ "$INPUT_VERSION" == "android16-6.12" ]]; then
+          if [ "$INPUT_BYPASS" = "false" ]; then
             sed -i '/name = "kernel_aarch64",/a\    check_defconfig = "disabled",' common/BUILD.bazel
           fi
           tools/bazel run \
@@ -87,37 +93,43 @@ runs:
   - name: 'Gather Build Artifacts'
     shell: bash
     working-directory: ${{ github.workspace }}
+    env:
+      INPUT_BYPASS: ${{ inputs.bypass }}
+      WORKSPACE: ${{ github.workspace }}
     run: |
       set -euo pipefail
+      
       if [ -f "/home/runner/out/dist/Image" ]; then
-        echo "Found Image at /home/runner/out/dist/Image"
-        if [[ ${{ inputs.bypass }} == "true" ]]; then
-          cp "/home/runner/out/dist/Image" "${{ github.workspace }}/AnyKernel3/Bypass-Image"
+        IMAGE_PATH="/home/runner/out/dist/Image"
+        echo "Found Image at $IMAGE_PATH"
+        if [ "$INPUT_BYPASS" = "true" ]; then
+          cp "$IMAGE_PATH" "$WORKSPACE/AnyKernel3/Bypass-Image"
         else
-          cp "/home/runner/out/dist/Image" "${{ github.workspace }}/AnyKernel3/Image"
+          cp "$IMAGE_PATH" "$WORKSPACE/AnyKernel3/Image"
           echo "Kernel Version:"
-          strings "/home/runner/out/dist/Image" | grep -m1 "^Linux version "
+          strings "$IMAGE_PATH" | grep -m1 "^Linux version "
         fi
-          exit 0
-        fi
-      if [ -f "/home/runner/out/Image" ]; then
-        echo "Found Image at /home/runner/out/Image"
-        if [[ ${{ inputs.bypass }} == "true" ]]; then
-          cp "/home/runner/out/Image" "${{ github.workspace }}/AnyKernel3/Bypass-Image"
+      elif [ -f "/home/runner/out/Image" ]; then
+        IMAGE_PATH="/home/runner/out/Image"
+        echo "Found Image at $IMAGE_PATH"
+        if [ "$INPUT_BYPASS" = "true" ]; then
+          cp "$IMAGE_PATH" "$WORKSPACE/AnyKernel3/Bypass-Image"
         else
-          cp "/home/runner/out/Image" "${{ github.workspace }}/AnyKernel3/Image"
+          cp "$IMAGE_PATH" "$WORKSPACE/AnyKernel3/Image"
         fi
-        exit 0
+      else
+        echo "Error: No kernel Image found in expected build output paths."
+        exit 1
       fi
-
-      exit 1
 
   - name: 'Patch AnyKernel3 for Bypass Hack'
     shell: bash
     if: ${{ inputs.bypass == 'true' }}
     working-directory: ${{ github.workspace }}/AnyKernel3
+    env:
+      ACTION_PATH: ${{ github.action_path }}
+      WORKSPACE: ${{ github.workspace }}
     run: |
       set -euo pipefail
-      cp ${{ github.action_path }}/patches/bypass.patch "${{ github.workspace }}/AnyKernel3/bypass.patch"
+      cp "$ACTION_PATH/patches/bypass.patch" "$WORKSPACE/AnyKernel3/bypass.patch"
       patch -p1 < bypass.patch
-

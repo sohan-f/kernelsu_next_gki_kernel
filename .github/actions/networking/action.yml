@@ -1,26 +1,14 @@
 name: 'Setup Networking Options'
-description: 'Set up kernel configuration fragment with required options'
-inputs:
-  version:
-    description: 'Kernel config version (e.g., android15-6.6)'
-    required: true
-  kernel_version:
-    description: 'Kernel version (e.g., 6.1)'
-    required: true
-  android_version:
-    description: 'Android version (e.g., android14)'
-    required: true
-  sublevel:
-    description: 'Kernel sublevel'
-    required: true
+description: 'Set up kernel configuration fragment with required options for android15-6.6'
 
 runs:
   using: "composite"
   steps:
-    - name: Enable IP Set & Firewall Configs
+    - name: Configure Base Networking & Traffic Control Options
       uses: ./.github/actions/set-kernel-config
       with:
         config_list: |
+          # Firewall & IP Set
           CONFIG_IP_SET=y
           CONFIG_IP_SET_MAX=65534
           CONFIG_IP_SET_BITMAP_IP=y
@@ -38,79 +26,62 @@ runs:
           CONFIG_IP_SET_HASH_NETNET=y
           CONFIG_IP_SET_HASH_NETPORT=y
           CONFIG_IP_SET_HASH_NETIFACE=y
-          CONFIG_IP_SET_LIST_SET=y
           CONFIG_NETFILTER_XT_MATCH_ADDRTYPE=y
           CONFIG_NETFILTER_XT_SET=y
           CONFIG_NETFILTER_XT_TARGET_LOG=y
           CONFIG_NETFILTER_XT_MATCH_RECENT=y
           CONFIG_IP6_NF_NAT=y
           CONFIG_IP6_NF_TARGET_MASQUERADE=y
-
-    - name: Enable TCP Congestion Control Configs
-      uses: ./.github/actions/set-kernel-config
-      with:
-        config_list: |
+          
+          # TCP Congestion Control Basics
           CONFIG_TCP_CONG_ADVANCED=y
-          CONFIG_TCP_CONG_BBR=y
           CONFIG_TCP_CONG_CUBIC=y
           CONFIG_TCP_CONG_BIC=y
           CONFIG_TCP_CONG_WESTWOOD=y
           CONFIG_TCP_CONG_HTCP=y
-          CONFIG_DEFAULT_BBR=y
-          CONFIG_DEFAULT_TCP_CONG="bbr"
-
-    - name: Enable Traffic Shaping (Qdisc) Configs
-      uses: ./.github/actions/set-kernel-config
-      with:
-        config_list: |
+          CONFIG_TCP_CONG_BBR=y
+          
+          # Qdisc & Traffic Shaping (Essential for BBR pacing)
           CONFIG_NET_SCH_FQ=y
           CONFIG_NET_SCH_FQ_CODEL=y
           CONFIG_NET_SCH_CAKE=y
-
-    - name: Enable Connection Marking Configs
-      uses: ./.github/actions/set-kernel-config
-      with:
-        config_list: |
+          
+          # Netfilter Routing & TTL Control
           CONFIG_NET_ACT_CONNMARK=y
-
-    - name: Enable TTL/Hop Limit Target Configs
-      uses: ./.github/actions/set-kernel-config
-      with:
-        config_list: |
           CONFIG_IP_NF_TARGET_TTL=y
           CONFIG_IP6_NF_TARGET_HL=y
           CONFIG_IP6_NF_MATCH_HL=y
-
-    - name: Enable Wireguard VPN Configs
-      uses: ./.github/actions/set-kernel-config
-      with:
-        config_list: |
+          
+          # Wireguard VPN Support
           CONFIG_WIREGUARD=y
-        
-    - name: Apply BBRv3 Patch
-      shell: bash
-      working-directory: ${{ github.workspace }}/kernel/common
-      run: |
-        set -euo pipefail
-        if [[ ${{ inputs.version }} == "android15-6.6" ]]; then
-          patch -p1 < "${{ github.workspace }}/kernel_patches/common/bbrv3/0001-net-tcp-backport-BBRv3-to-android15-6.6.patch"
-        fi
-
-        echo "✅ BBRv3 patches applied"
-
-    - name: Enable BBRv3 Kernel Config
-      uses: ./.github/actions/set-kernel-config
-      with:
-        config_list: |
-          CONFIG_TCP_CONG_BBR3=y
-
-    - name: Enable CIFS Configs
-      uses: ./.github/actions/set-kernel-config
-      with:
-        config_list: |
+          
+          # Network Storage Support (CIFS / Samba Shares)
           CONFIG_CIFS=y
           CONFIG_NETWORK_FILESYSTEMS=y
           CONFIG_NETFS_SUPPORT=y
           CONFIG_KEYS=y
           CONFIG_CIFS_XATTR=y
           CONFIG_CIFS_POSIX=y
+
+    - name: Apply BBRv3 Backport Patch
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel/common
+      run: |
+        set -euo pipefail
+        PATCH_FILE="${{ github.workspace }}/kernel_patches/common/bbrv3/0001-net-tcp-backport-BBRv3-to-android15-6.6.patch"
+        
+        if [ -f "$PATCH_FILE" ]; then
+          patch -p1 < "$PATCH_FILE"
+          echo "✅ BBRv3 patch successfully applied"
+        else
+          echo "❌ Error: BBRv3 patch file not found at $PATCH_FILE"
+          exit 1
+        fi
+
+    - name: Enable BBRv3 & Set as Default
+      uses: ./.github/actions/set-kernel-config
+      with:
+        config_list: |
+          CONFIG_TCP_CONG_BBR3=y
+          CONFIG_DEFAULT_BBR=y
+          CONFIG_DEFAULT_TCP_CONG="bbr3"

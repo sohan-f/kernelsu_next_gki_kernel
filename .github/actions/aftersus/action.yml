@@ -1,5 +1,5 @@
-name: 'After patch fix'
-description: 'patch task_mmu.c for nomount'
+name: After patch fix
+description: patch task_mmu.c for nomount
 
 runs:
   using: "composite"
@@ -12,7 +12,6 @@ runs:
 
         PATCH_PATH="${{ github.workspace }}/patches/fix.patch"
 
-        # Move into the core kernel source and apply the patch
         cd common
         patch -p1 < "$PATCH_PATH"
         echo "Successfully patched the kernel with NoMount hooks!"

@@ -130,4 +130,3 @@ runs:
 
         echo "Kernel common commit date: $COMMIT_DATE"
         echo "Kernel common commit msg: $COMMIT_MSG"
-
