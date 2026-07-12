@@ -32,7 +32,7 @@ on:
           - FULL
         default: FULL
       ksu_branch:
-        description: "KernelSU branch or commit (empty = latest dev-susfs branch tip)"
+        description: "KernelSU branch or commit (empty = latest stable branch tip)"
         type: string
         required: false
         default: ""
@@ -189,7 +189,7 @@ jobs:
           echo
           echo "**Kernel Version:** android15-6.6"
           echo "**Feature Set:** ${{ inputs.feature_set }}"
-          echo "**KSU Branch:** ${{ inputs.ksu_branch || 'latest dev' }}"
+          echo "**KSU Branch:** ${{ inputs.ksu_branch || 'latest stable' }}"
           echo
 
           # Count successes and failures
@@ -269,7 +269,7 @@ jobs:
 
     - name: Free Disk Space
       if: true
-      uses: endersonmenezes/free-disk-space@v3  # Use @main for latest, @v3 for stable
+      uses: endersonmenezes/free-disk-space@v3
       with:
         remove_android: true
         remove_dotnet: true
@@ -279,8 +279,8 @@ jobs:
         remove_packages: "azure-cli google-cloud-cli microsoft-edge-stable google-chrome-stable firefox postgresql* temurin-* *llvm* mysql* dotnet-sdk-*"
         remove_packages_one_command: true
         remove_folders: "/usr/share/swift /usr/share/miniconda /usr/share/az* /usr/local/lib/node_modules /usr/local/share/chromium /usr/local/share/powershell /usr/local/julia /usr/local/aws-cli /usr/local/aws-sam-cli /usr/share/gradle"
-        rm_cmd: "rmz"  # Use 'rmz' for faster deletion (default: 'rm')
-        rmz_version: "3.1.1"  # Required when rm_cmd is 'rmz'
+        rm_cmd: "rmz"
+        rmz_version: "3.1.1"
         testing: false
 
     - name: Checkout code
@@ -335,10 +335,10 @@ jobs:
       run: |
         set -euo pipefail
 
-        KSU_REPO="https://github.com/pershoot/KernelSU-Next.git"
+        KSU_REPO="https://github.com/KernelSU-Next/KernelSU-Next.git"
         KSU_INPUT="${{ inputs.ksu_branch }}"
         if [ -z "$KSU_INPUT" ]; then
-          KSU_INPUT="dev-susfs"
+          KSU_INPUT="stable"
         fi
 
         # Try as branch first, fall back to commit
@@ -348,8 +348,8 @@ jobs:
           cd /tmp/kernelsu-next
           KSUN_COMMIT=$(git rev-parse HEAD)
         else
-          echo "Cloning KernelSU-Next from dev-susfs branch, then checking out commit: $KSU_INPUT"
-          git clone --branch dev-susfs "$KSU_REPO" /tmp/kernelsu-next
+          echo "Cloning KernelSU-Next from stable branch, then checking out commit: $KSU_INPUT"
+          git clone --branch stable "$KSU_REPO" /tmp/kernelsu-next
           cd /tmp/kernelsu-next
           git fetch --depth=50 origin "$KSU_INPUT"
           git checkout "$KSU_INPUT"
@@ -364,11 +364,11 @@ jobs:
         # Extract git tag
         KSU_GIT_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "no-tag")
 
-        MANAGER_RUN_ID=$(curl -fsSL "https://api.github.com/repos/pershoot/KernelSU-Next/actions/workflows/build-manager-ci.yml/runs?head_sha=${KSUN_COMMIT}" | jq -r '.workflow_runs[0].id // empty')
+        MANAGER_RUN_ID=$(curl -fsSL "https://api.github.com/repos/KernelSU-Next/KernelSU-Next/actions/workflows/build-manager-ci.yml/runs?head_sha=${KSUN_COMMIT}" | jq -r '.workflow_runs[0].id // empty')
         if [[ -n "${MANAGER_RUN_ID:-}" ]]; then
-          KSU_MANAGER="https://github.com/pershoot/KernelSU-Next/actions/runs/${MANAGER_RUN_ID}"
+          KSU_MANAGER="https://github.com/KernelSU-Next/KernelSU-Next/actions/runs/${MANAGER_RUN_ID}"
         else
-          KSU_MANAGER="https://github.com/pershoot/KernelSU-Next/actions/workflows/build-manager-ci.yml"
+          KSU_MANAGER="https://github.com/KernelSU-Next/KernelSU-Next/actions/workflows/build-manager-ci.yml"
         fi
 
         echo "Commits count: $COMMITS_COUNT"
