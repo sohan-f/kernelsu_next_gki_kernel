@@ -2,7 +2,7 @@ name: Setup KernelSU-Next
 description: Download and configure KernelSU-Next with version tracking
 inputs:
   ksu_branch:
-    description: 'KernelSU-Next branch or commit (empty = latest stable branch tip)'
+    description: 'KernelSU-Next branch or commit (empty = latest dev-susfs branch tip)'
     required: false
     default: ""
 
@@ -17,11 +17,11 @@ runs:
 
         KSU_INPUT="${{ inputs.ksu_branch }}"
         if [ -z "$KSU_INPUT" ]; then
-          KSU_INPUT="stable"
+          KSU_INPUT="dev-susfs"
         fi
 
         echo "Initializing KernelSU-Next via setup script..."
-        curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s stable
+        curl -LSs "https://raw.githubusercontent.com/pershoot/KernelSU-Next/dev-susfs/kernel/setup.sh" | bash -s dev-susfs
 
         cd KernelSU-Next
         
