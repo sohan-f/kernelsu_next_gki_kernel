@@ -46,6 +46,20 @@ runs:
         
         echo "Summary: Version ${KSU_VERSION} (${KSU_GIT_TAG}) at commit ${KSU_COMMIT}"
 
+    - name: Apply Static Patches
+      shell: bash
+      working-directory: ${{ github.workspace }}/kernel/KernelSU-Next
+      run: |
+        set -euo pipefail
+        PATCH_PATH="${{ github.action_path }}/patches/static.patch"
+        
+        if [ -f "$PATCH_PATH" ]; then
+          patch -p1 < "$PATCH_PATH"
+          echo "✅ Static patch successfully applied"
+        else
+          echo "ℹ️ No static patch found at $PATCH_PATH, skipping."
+        fi
+
     - name: Enable Kernel Configs
       uses: ./.github/actions/set-kernel-config
       with:
