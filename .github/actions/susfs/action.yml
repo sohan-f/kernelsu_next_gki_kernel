@@ -26,22 +26,7 @@ runs:
   steps:
     - name: Setup SUSFS Branch
       shell: bash
-      run: |
-        set -euo pipefail
-
-        SUSFS_BRANCH="gki-${{ inputs.version }}"
-        SUSFS_REPO="https://gitlab.com/simonpunk/susfs4ksu.git"        
-
-        echo "Preparing SUSFS for branch: $SUSFS_BRANCH"
-        echo "Cloning latest from $SUSFS_BRANCH..."
-        git clone "$SUSFS_REPO" -b "$SUSFS_BRANCH" susfs4ksu
-
-        if [ -n "${{ inputs.susfs_commit }}" ]; then
-          echo "Checking out SUSFS commit: ${{ inputs.susfs_commit }}"
-          cd ${{ github.workspace }}/susfs4ksu
-          git checkout "${{ inputs.susfs_commit }}"
-        fi
-
+      run: "set -euo pipefail\n#magic___^_^___line\nSUSFS_BRANCH=\"gki-${{ inputs.version }}\"\nSUSFS_REPO=\"https://gitlab.com/simonpunk/susfs4ksu.git\"        \n#magic___^_^___line\necho \"Preparing SUSFS for branch: $SUSFS_BRANCH\"\necho \"Cloning latest from $SUSFS_BRANCH...\"\ngit clone \"$SUSFS_REPO\" -b \"$SUSFS_BRANCH\" susfs4ksu\n#magic___^_^___line\nif [ -n \"${{ inputs.susfs_commit }}\" ]; then\n  echo \"Checking out SUSFS commit: ${{ inputs.susfs_commit }}\"\n  cd ${{ github.workspace }}/susfs4ksu\n  git checkout \"${{ inputs.susfs_commit }}\"\nfi\n  #magic___^_^___line\n"
     - name: Enable Kernel Configs
       uses: ./.github/actions/set-kernel-config
       with:

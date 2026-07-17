@@ -24,7 +24,7 @@ runs:
         curl -LSs "https://raw.githubusercontent.com/pershoot/KernelSU-Next/dev-susfs/kernel/setup.sh" | bash -s dev-susfs
 
         cd KernelSU-Next
-        
+
         echo "Fetching target ref: $KSU_INPUT"
         git fetch --depth=50 origin "$KSU_INPUT"
         git checkout FETCH_HEAD
@@ -43,7 +43,7 @@ runs:
         echo "KSU_GIT_TAG=${KSU_GIT_TAG}" >> $GITHUB_ENV
         echo "KSU_VERSION=${KSU_VERSION}" >> $GITHUB_ENV
         echo "KSU_COMMIT=${KSU_COMMIT}" >> $GITHUB_ENV
-        
+
         echo "Summary: Version ${KSU_VERSION} (${KSU_GIT_TAG}) at commit ${KSU_COMMIT}"
 
     - name: Apply Static Patches
@@ -52,7 +52,7 @@ runs:
       run: |
         set -euo pipefail
         PATCH_PATH="${{ github.action_path }}/patches/static.patch"
-        
+
         if [ -f "$PATCH_PATH" ]; then
           patch -p1 < "$PATCH_PATH"
           echo "✅ Static patch successfully applied"

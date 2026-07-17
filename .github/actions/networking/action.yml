@@ -32,7 +32,7 @@ runs:
           CONFIG_NETFILTER_XT_MATCH_RECENT=y
           CONFIG_IP6_NF_NAT=y
           CONFIG_IP6_NF_TARGET_MASQUERADE=y
-          
+
           # TCP Congestion Control Basics
           CONFIG_TCP_CONG_ADVANCED=y
           CONFIG_TCP_CONG_CUBIC=y
@@ -40,21 +40,21 @@ runs:
           CONFIG_TCP_CONG_WESTWOOD=y
           CONFIG_TCP_CONG_HTCP=y
           CONFIG_TCP_CONG_BBR=y
-          
+
           # Qdisc & Traffic Shaping (Essential for BBR pacing)
           CONFIG_NET_SCH_FQ=y
           CONFIG_NET_SCH_FQ_CODEL=y
           CONFIG_NET_SCH_CAKE=y
-          
+
           # Netfilter Routing & TTL Control
           CONFIG_NET_ACT_CONNMARK=y
           CONFIG_IP_NF_TARGET_TTL=y
           CONFIG_IP6_NF_TARGET_HL=y
           CONFIG_IP6_NF_MATCH_HL=y
-          
+
           # Wireguard VPN Support
           CONFIG_WIREGUARD=y
-          
+
           # Network Storage Support (CIFS / Samba Shares)
           CONFIG_CIFS=y
           CONFIG_NETWORK_FILESYSTEMS=y
@@ -69,7 +69,7 @@ runs:
       run: |
         set -euo pipefail
         PATCH_FILE="${{ github.workspace }}/kernel_patches/common/bbrv3/0001-net-tcp-backport-BBRv3-to-android15-6.6.patch"
-        
+
         if [ -f "$PATCH_FILE" ]; then
           patch -p1 < "$PATCH_FILE"
           echo "✅ BBRv3 patch successfully applied"

@@ -89,14 +89,14 @@ runs:
         if [ -n "$RELEASE_VAR" ]; then
           TAG_NAME="${FORMATTED_BRANCH}_${RELEASE_VAR}"
           echo "Targeting specific GKI release variant tag: $TAG_NAME"
-          
+
           if [ -d common ]; then
             cd common
             echo "Fetching explicit tag from upstream (shallow)..."
             # local refs for every other tag on the remote. protocol.version=2
             # avoids a full ref-advertisement dump during the handshake.
             git -c protocol.version=2 fetch --depth=1 --no-tags https://android.googlesource.com/kernel/common refs/tags/${TAG_NAME}:refs/tags/${TAG_NAME}
-            
+
             echo "Checking out tag $TAG_NAME..."
             git checkout refs/tags/${TAG_NAME}
             cd ..

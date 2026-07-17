@@ -41,14 +41,14 @@ runs:
           sudo chmod +x /usr/bin/ccache
           rm -f ./ccache
         fi
-        
+
         # Verify ccache
         if ! /usr/bin/ccache --version > /dev/null 2>&1; then
           echo "❌ ccache installation failed or binary is corrupted"
           exit 1
         fi
         echo "✅ ccache binary verified: $(/usr/bin/ccache --version | head -1)"
-        
+
         # Setup cache directories
         export CCACHE_DIR="/home/runner/.ccache"
         echo "CCACHE_DIR=$CCACHE_DIR" >> $GITHUB_ENV
@@ -87,7 +87,7 @@ runs:
           export CCACHE_DEPEND=true
           echo "CCACHE_DEPEND=true" >> "$GITHUB_ENV"
         fi
-        
+
         echo "=== ccache config ==="
         echo "====================="
         ccache -p
@@ -108,7 +108,7 @@ runs:
         set -euo pipefail
         export BAZEL_CACHE_DIR="/home/runner/.cache/bazel"
         mkdir -p "$BAZEL_CACHE_DIR"
-        
+
         # Set bazel disk cache size limit to 8GB
         #export BAZEL_DISK_CACHE_SIZE="8589934592"
         #echo "BAZEL_DISK_CACHE_SIZE=$BAZEL_DISK_CACHE_SIZE" >> $GITHUB_ENV
@@ -124,7 +124,7 @@ runs:
         export LDCACHE_DIR="/home/runner/.ld_cache"
         echo "LDCACHE_DIR=$LDCACHE_DIR" >> $GITHUB_ENV
         mkdir -p "$LDCACHE_DIR"
-          
+
         # Create LD wrapper for thin-LTO caching
         cat > "${{ github.workspace }}/kernel/common/ld-wrapper" << 'EOF'
         #!/bin/bash
@@ -137,4 +137,4 @@ runs:
 
         echo "✅ LD Cache ready (max 4GB)"
         echo "LDCACHE_DIR: $LDCACHE_DIR"
-        
+

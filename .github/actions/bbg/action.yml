@@ -9,14 +9,14 @@ runs:
       working-directory: ${{ github.workspace }}/kernel
       run: |
         wget -O- https://github.com/vc-teahouse/Baseband-guard/raw/main/setup.sh | bash
-    
+
     - name: Configure Baseband Guard
       shell: bash
       working-directory: ${{ github.workspace }}/kernel
       run: |
         # Modify security Kconfig to include baseband_guard in LSM
         sed -i '/^config LSM$/,/^help$/{ /^[[:space:]]*default/ { /baseband_guard/! s/selinux/selinux,baseband_guard/ } }' common/security/Kconfig
-    
+
     - name: Verify BBG Installation
       shell: bash
       working-directory: ${{ github.workspace }}/kernel
@@ -28,7 +28,7 @@ runs:
           echo "✗ FAILED: baseband_guard not found in common/security/Kconfig"
           exit 1
         fi
-    
+
     - name: Extract BBG Version
       shell: bash
       working-directory: ${{ github.workspace }}/kernel/Baseband-guard

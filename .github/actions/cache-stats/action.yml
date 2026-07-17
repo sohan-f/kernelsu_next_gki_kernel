@@ -46,74 +46,7 @@ runs:
     - name: Show ccache Stats
       shell: bash
       working-directory: ${{ github.workspace }}
-      run: |
-        set -euo pipefail
-        echo "===================="
-        echo "=== ccache stats ==="
-        echo "===================="
-        
-        if ! command -v ccache >/dev/null 2>&1; then
-          echo "⚠️  ccache not installed, skipping ccache stats"
-          echo "===================="
-          exit 0
-        fi
-        
-        ccache -s || true
-        echo "====================="
-        echo "=== ccache config ==="
-        echo "====================="
-        ccache -p || true
-        echo "====================="
-
-        STATS="$(ccache -s)"
-        
-        CACHEABLE=$(echo "$STATS" | awk '/Cacheable calls:/ {
-          match($0, /[0-9]+/); 
-          print substr($0, RSTART, RLENGTH)
-        }' | head -n1)
-        
-        HITS=$(echo "$STATS" | awk '/^[[:space:]]*Hits:/ {
-          match($0, /[0-9]+/); 
-          print substr($0, RSTART, RLENGTH)
-        }' | head -n1)
-        
-        DIRECT=$(echo "$STATS" | awk '/Direct:/ {
-          match($0, /[0-9]+/); 
-          print substr($0, RSTART, RLENGTH)
-        }' | head -n1)
-        
-        if [ "${CACHEABLE:-0}" -gt 0 ]; then
-          HIT_RATE=$(awk -v h="${HITS:-0}" -v c="$CACHEABLE" 'BEGIN{printf "%.1f", (h/c)*100}')
-          DIRECT_RATE=$(awk -v d="${DIRECT:-0}" -v c="$CACHEABLE" 'BEGIN{printf "%.1f", (d/c)*100}')
-        else
-          HIT_RATE="0.0"
-          DIRECT_RATE="0.0"
-        fi
-        
-        echo "hit_rate=${HIT_RATE}%"
-        echo "direct_rate=${DIRECT_RATE}%"
-
-        if [ "${{ inputs.clear_stats }}" = "true" ]; then
-          echo "=== ccache reset ==="
-          echo "====================="
-          ccache -z || true
-          echo "====================="
-          
-          # Touch all files to prevent LRU eviction of freshly restored cache
-          if [ -d /home/runner/.ccache ] && find /home/runner/.ccache -type f -print -quit 2>/dev/null | grep -q .; then
-            echo "Updating ccache atime to prevent cache eviction..."
-            find /home/runner/.ccache -type f -exec touch -t $(date -d "1 day ago" +%Y%m%d%H%M) {} +
-            echo "✅ ccache atime updated"
-          fi
-          if [ -d /home/runner/.ld_cache ] && find /home/runner/.ld_cache -type f -print -quit 2>/dev/null | grep -q .; then
-            echo "Updating LTO cache atime to prevent cache eviction..."
-            find /home/runner/.ld_cache -type f -exec touch -t $(date -d "1 day ago" +%Y%m%d%H%M) {} +
-            echo "✅ LTO cache atime updated"
-          fi
-        else
-          echo "Keeping ccache stats for next run"
-        fi
-
+      run: "set -euo pipefail\necho \"====================\"\necho \"=== ccache stats ===\"\necho \"====================\"\n      #magic___^_^___line\nif ! command -v ccache >/dev/null 2>&1; then\n  echo \"⚠️  ccache not installed, skipping ccache stats\"\n  echo \"====================\"\n  exit 0\nfi\n      #magic___^_^___line\nccache -s || true\necho \"=====================\"\necho \"=== ccache config ===\"\necho \"=====================\"\nccache -p || true\necho \"=====================\"\n      #magic___^_^___line\nSTATS=\"$(ccache -s)\"\n      #magic___^_^___line\nCACHEABLE=$(echo \"$STATS\" | awk '/Cacheable calls:/ {\n  match($0, /[0-9]+/); \n  print substr($0, RSTART, RLENGTH)\n}' | head -n1)\n      #magic___^_^___line\nHITS=$(echo \"$STATS\" | awk '/^[[:space:]]*Hits:/ {\n  match($0, /[0-9]+/); \n  print substr($0, RSTART, RLENGTH)\n}' | head -n1)\n      #magic___^_^___line\nDIRECT=$(echo \"$STATS\" | awk '/Direct:/ {\n  match($0, /[0-9]+/); \n  print substr($0, RSTART, RLENGTH)\n}' | head -n1)\n      #magic___^_^___line\nif [ \"${CACHEABLE:-0}\" -gt 0 ]; then\n  HIT_RATE=$(awk -v h=\"${HITS:-0}\" -v c=\"$CACHEABLE\" 'BEGIN{printf \"%.1f\", (h/c)*100}')\n  DIRECT_RATE=$(awk -v d=\"${DIRECT:-0}\" -v c=\"$CACHEABLE\" 'BEGIN{printf \"%.1f\", (d/c)*100}')\nelse\n  HIT_RATE=\"0.0\"\n  DIRECT_RATE=\"0.0\"\nfi\n      #magic___^_^___line\necho \"hit_rate=${HIT_RATE}%\"\necho \"direct_rate=${DIRECT_RATE}%\"\n      #magic___^_^___line\nif [ \"${{ inputs.clear_stats }}\" = \"true\" ]; then\n  echo \"=== ccache reset ===\"\n  echo \"=====================\"\n  ccache -z || true\n  echo \"=====================\"\n      #magic___^_^___line\n  # Touch all files to prevent LRU eviction of freshly restored cache\n  if [ -d /home/runner/.ccache ] && find /home/runner/.ccache -type f -print -quit 2>/dev/null | grep -q .; then\n    echo \"Updating ccache atime to prevent cache eviction...\"\n    find /home/runner/.ccache -type f -exec touch -t $(date -d \"1 day ago\" +%Y%m%d%H%M) {} +\n    echo \"✅ ccache atime updated\"\n  fi\n  if [ -d /home/runner/.ld_cache ] && find /home/runner/.ld_cache -type f -print -quit 2>/dev/null | grep -q .; then\n    echo \"Updating LTO cache atime to prevent cache eviction...\"\n    find /home/runner/.ld_cache -type f -exec touch -t $(date -d \"1 day ago\" +%Y%m%d%H%M) {} +\n    echo \"✅ LTO cache atime updated\"\n  fi\nelse\n  echo \"Keeping ccache stats for next run\"\nfi\n      #magic___^_^___line\n"
     - name: Show ccache folder Stats
       shell: bash
       working-directory: ${{ github.workspace }}
@@ -138,7 +71,7 @@ runs:
         echo "=== .cache/bazel ==="
         echo "===================="
         summarize_dir /home/runner/.cache/bazel 10 5 || true
-        
+
     - name: Show ld cache folder Stats
       shell: bash
       working-directory: ${{ github.workspace }}
@@ -150,4 +83,4 @@ runs:
         echo "=== .ld_cache ==="
         echo "================="
         summarize_dir /home/runner/.ld_cache 10 5 || true
-        
+

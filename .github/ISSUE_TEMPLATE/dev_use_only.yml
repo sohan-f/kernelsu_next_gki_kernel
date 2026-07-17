@@ -8,18 +8,18 @@ body:
     attributes:
       value: |
         ## ⚠️ Developer Use Only
-        
+
         This issue template is reserved for internal development purposes only.
-        
+
         **For regular users:**
         - Use the [Bug Report](bug_report.yml) template for bugs
         - Use the [Feature Request](feature_request.yml) template for new features
-        
+
         ---
-        
+
         **Developer Instructions:**
         This is a blank template for consolidating issues, tracking internal tasks, or other development purposes.
-        
+
   - type: textarea
     id: content
     attributes:
