@@ -147,9 +147,6 @@ jobs:
           os_patch_level: ${{ inputs.os_patch_level }}
           sublevel: ${{ steps.extract.outputs.sublevel }}
 
-      - name: After SuSFS patch (to fix nomount)
-        uses: ./.github/actions/aftersus
-
       - name: Baseband Guard
         if: (contains(inputs.feature_set, 'BBG') || inputs.feature_set == 'FULL')
         uses: ./.github/actions/bbg
@@ -163,18 +160,20 @@ jobs:
           android_version: ${{ inputs.android_version }}
           sublevel: ${{ steps.extract.outputs.sublevel }}
 
-      # - name: DroidSpaces-OSS Patches
-      #   if: contains(inputs.feature_set, 'DS') || inputs.feature_set == 'FULL'
-      #   uses: ./.github/actions/droidspaces
-      #   with:
-      #     version: ${{ inputs.version }}
-      #     kernel_version: ${{ inputs.kernel_version }}
+      - name: DroidSpaces-OSS Patches
+        # if: contains(inputs.feature_set, 'DS') || inputs.feature_set == 'FULL'
+        if: false
+        uses: ./.github/actions/droidspaces
+        with:
+          version: ${{ inputs.version }}/
+          kernel_version: ${{ inputs.kernel_version }}
 
-      # - name: Apply NTSync Patches
-      #   uses: ./.github/actions/ntsync
-      #   with:
-      #     version: ${{ inputs.version }}
-      #     kernel_version: ${{ inputs.kernel_version }}
+      - name: Apply NTSync Patches
+        if: false
+        uses: ./.github/actions/ntsync
+        with:
+          version: ${{ inputs.version }}
+          kernel_version: ${{ inputs.kernel_version }}
 
       - name: Apply Ptrace Patch
         uses: ./.github/actions/ptrace
@@ -198,7 +197,6 @@ jobs:
         if: false
         working-directory: ${{ github.workspace }}/kernel
         run: |
-          # Only android15-6.6 is built from this repo, so this is the only branch kept.
           perl -i -pe 's/^(\s*)return 1$/$1print("Who Cares? Bypassing Now!")\n$1return 0/g if /if missing_symbols:/../return 1/' build/kernel/abi/check_buildtime_symbol_protection.py
 
       - name: Apply Kernel Branding
@@ -380,4 +378,3 @@ jobs:
           path: ${{ github.workspace }}/AnyKernel3/**
           if-no-files-found: ignore
           compression-level: 9
-

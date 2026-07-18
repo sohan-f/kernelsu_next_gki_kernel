@@ -5,7 +5,7 @@ inputs:
   nomount_branch:
     description: 'Branch or commit of NoMount to use'
     required: false
-    default: 'master'
+    default: 'dev'
   patch_file_name:
     description: 'The exact name of the patch file to use (e.g., nomount_5.10_kernel_integration.patch)'
     required: true
@@ -32,15 +32,14 @@ runs:
 
         echo "Applying NoMount integration patch: ${{ inputs.patch_file_name }}"
 
-        PATCH_PATH="${{ github.workspace }}/patches/${{ inputs.patch_file_name }}"
+        PATCH_PATH="nomount_src/kernel/patches/${{ inputs.patch_file_name }}"
 
         if [ ! -f "$PATCH_PATH" ]; then
             echo "ERROR: Patch file '$PATCH_PATH' not found." >&2
             exit 1
         fi
 
-        cd common
-        patch -p1 < "$PATCH_PATH"
+        patch -d common -p1 < "$PATCH_PATH"
 
         echo "Successfully patched the kernel with NoMount hooks!"
 
