@@ -33,8 +33,8 @@ runs:
         if [ "${{ inputs.version }}" == "android15-6.6" ]; then
           #curl -L https://raw.githubusercontent.com/ravindu644/Droidspaces-OSS/main/Documentation/resources/kernel-patches/GKI/below-kernel-6.12/001.GKI-below-6.12-fix_sysvipc_kabi_1_2_3.patch
           #curl -L https://raw.githubusercontent.com/ravindu644/Droidspaces-OSS/main/Documentation/resources/kernel-patches/GKI/below-kernel-6.12/001.GKI-below-6.12-fix_sysvipc_kabi_3_4_5.patch
-          cp ${{ github.workspace }}/Droidspaces-OSS/Documentation/resources/kernel-patches/GKI/below-kernel-6.12/001.GKI-below-6.12-fix_sysvipc_kabi_6_7_8.patch ./
-          patch -p1 < 001.GKI-below-6.12-fix_sysvipc_kabi_6_7_8.patch
+          cp ${{ github.workspace }}/Droidspaces-OSS/Documentation/resources/kernel-patches/GKI/below-kernel-6.12/001.GKI-below-6.12-fix_sysvipc_kabi_3_4_5.patch ./
+          patch -p1 < 001.GKI-below-6.12-fix_sysvipc_kabi_3_4_5.patch
         fi
 
     - name: Enable Kernel Configs
