@@ -5,7 +5,7 @@ inputs:
   nomount_branch:
     description: 'Branch or commit of NoMount to use'
     required: false
-    default: 'dev'
+    default: 'master'
   patch_file_name:
     description: 'The exact name of the patch file to use (e.g., nomount_5.10_kernel_integration.patch)'
     required: true

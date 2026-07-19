@@ -125,11 +125,6 @@ jobs:
         with:
           ksu_branch: ${{ inputs.ksu_branch }}
 
-      - name: Integrate NoMount
-        uses: ./.github/actions/nomount
-        with:
-          patch_file_name: 'nomount_6.6_kernel_integration.patch'
-
       - name: SUSFS
         if: contains(inputs.feature_set, 'SUSFS') || inputs.feature_set == 'FULL'
         uses: ./.github/actions/susfs
@@ -140,6 +135,11 @@ jobs:
           kernel_version: ${{ inputs.kernel_version }}
           os_patch_level: ${{ inputs.os_patch_level }}
           sublevel: ${{ steps.extract.outputs.sublevel }}
+
+      - name: Integrate NoMount
+        uses: ./.github/actions/nomount
+        with:
+          patch_file_name: 'nomount_6.6_kernel_integration.patch'
 
       - name: Baseband Guard
         if: (contains(inputs.feature_set, 'BBG') || inputs.feature_set == 'FULL')
