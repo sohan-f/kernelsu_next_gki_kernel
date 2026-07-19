@@ -2,9 +2,9 @@
   "version": "android15-6.6",
   "include": [
     {
-      "sublevel": "87",
-      "date": "2025-05",
-      "release_variant": "r19"
+      "sublevel": "139",
+      "date": "2026-07",
+      "release_variant": "r1"
     }
   ]
 }

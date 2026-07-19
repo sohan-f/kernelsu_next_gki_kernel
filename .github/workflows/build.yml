@@ -93,18 +93,21 @@ jobs:
         shell: bash
         run: |
           set -x
-          # Hardcode the build timestamp to a fixed date/time so the kernel
-          # version string reads: "#1 SMP PREEMPT Thu Dec  4 13:13:47 UTC 2025"
-          FIXED_BUILD_DATE="2025-12-04 13:13:47 UTC"
-          SOURCE_DATE_EPOCH=$(date -u -d "$FIXED_BUILD_DATE" +%s)
+
+          # Dynamically fetch the Unix timestamp of the latest git commit
+          SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)
           echo "SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH" >> $GITHUB_ENV
+
+          # Format the timestamp for the kernel build version string
           KBUILD_TS=$(date -u -d @${SOURCE_DATE_EPOCH} '+%a %b %d %H:%M:%S UTC %Y')
           echo "KBUILD_BUILD_TIMESTAMP=${KBUILD_TS}" >> $GITHUB_ENV
-          # Keep git metadata aligned with the same fixed timestamp.
+
+          # Align Git metadata variables for any subsequent commits or patches
           GIT_DATE=$(date -u -d @${SOURCE_DATE_EPOCH} '+%Y-%m-%dT%H:%M:%SZ')
           echo "GIT_COMMITTER_DATE=${GIT_DATE}" >> $GITHUB_ENV
           echo "GIT_AUTHOR_DATE=${GIT_DATE}" >> $GITHUB_ENV
-          echo "Build timestamp set to: $(date -u -d @${SOURCE_DATE_EPOCH} '+%Y-%m-%d %H:%M:%S UTC') (epoch: $SOURCE_DATE_EPOCH)"
+
+          echo "Build timestamp dynamically set to: $(date -u -d @${SOURCE_DATE_EPOCH} '+%Y-%m-%d %H:%M:%S UTC') (epoch: $SOURCE_DATE_EPOCH)"
 
       - name: Extract Sublevel and Set File Name
         id: extract
@@ -115,15 +118,6 @@ jobs:
           sublevel: ${{ inputs.sublevel }}
           os_patch_level: ${{ inputs.os_patch_level }}
           variant: ${{ inputs.variant }}
-
-      - name: Kernel Fixes
-        uses: ./.github/actions/kernel-fixes
-        with:
-          version: ${{ inputs.version }}
-          android_version: ${{ inputs.android_version }}
-          kernel_version: ${{ inputs.kernel_version }}
-          sublevel: ${{ steps.extract.outputs.sublevel }}
-          os_patch_level: ${{ inputs.os_patch_level }}
 
       - name: Setup KernelSU-Next
         if: contains(inputs.feature_set, 'KSUN') || inputs.feature_set == 'FULL'
