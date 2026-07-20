@@ -131,10 +131,6 @@ jobs:
         with:
           susfs_commit: ${{ inputs.susfs_commit }}
           version: ${{ inputs.version }}
-          android_version: ${{ inputs.android_version }}
-          kernel_version: ${{ inputs.kernel_version }}
-          os_patch_level: ${{ inputs.os_patch_level }}
-          sublevel: ${{ steps.extract.outputs.sublevel }}
 
       - name: Integrate NoMount
         uses: ./.github/actions/nomount
@@ -156,12 +152,12 @@ jobs:
           version: ${{ inputs.version }}/
           kernel_version: ${{ inputs.kernel_version }}
 
-      - name: Apply NTSync Patches
-        uses: ./.github/actions/ntsync
-        with:
-          version: ${{ inputs.version }}
-          kernel_version: ${{ inputs.kernel_version }}
-          sublevel: ${{ steps.extract.outputs.sublevel }}
+      # - name: Apply NTSync Patches
+      #   uses: ./.github/actions/ntsync
+      #   with:
+      #     version: ${{ inputs.version }}
+      #     kernel_version: ${{ inputs.kernel_version }}
+      #     sublevel: ${{ steps.extract.outputs.sublevel }}
 
       - name: Apply Unicode Fix Patch
         uses: ./.github/actions/unicode-fix
